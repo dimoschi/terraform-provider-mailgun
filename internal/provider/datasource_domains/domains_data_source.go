@@ -188,7 +188,7 @@ func (d *DomainsDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Helper function to convert ItemsValue slice to types.List
+// Helper function to convert ItemsValue slice to types.List.
 func convertItemsToList(ctx context.Context, items []ItemsValue) (types.List, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
