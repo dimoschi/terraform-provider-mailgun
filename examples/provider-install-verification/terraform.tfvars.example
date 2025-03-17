@@ -1,0 +1,9 @@
+# Mailgun API key
+# Replace with your actual API key
+api_key = "your-mailgun-api-key"
+
+# Optional: Specify region (US or EU)
+# region = "US"
+
+# Optional: Specify custom API endpoint
+# endpoint = "https://api.mailgun.net"

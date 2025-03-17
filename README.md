@@ -1,35 +1,135 @@
-# Terraform Provider Scaffolding (Terraform Plugin Framework)
+# Terraform Provider for Mailgun
 
-_This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding). See [Which SDK Should I Use?](https://developer.hashicorp.com/terraform/plugin/framework-benefits) in the Terraform documentation for additional information._
-
-This repository is a *template* for a [Terraform](https://www.terraform.io) provider. It is intended as a starting point for creating Terraform providers, containing:
-
-- A resource and a data source (`internal/provider/`),
-- Examples (`examples/`) and generated documentation (`docs/`),
-- Miscellaneous meta files.
-
-These files contain boilerplate code that you will need to edit to create your own Terraform provider. Tutorials for creating Terraform providers can be found on the [HashiCorp Developer](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework) platform. _Terraform Plugin Framework specific guides are titled accordingly._
-
-Please see the [GitHub template repository documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for how to create a new repository from this template on GitHub.
-
-Once you've written your provider, you'll want to [publish it on the Terraform Registry](https://developer.hashicorp.com/terraform/registry/providers/publishing) so that others can use it.
+This Terraform provider allows you to manage [Mailgun](https://www.mailgun.com/) resources through Terraform. It provides the ability to create, read, update, and delete Mailgun domains, as well as retrieve information about existing domains.
 
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
-- [Go](https://golang.org/doc/install) >= 1.22
+- [Go](https://golang.org/doc/install) >= 1.22 (for development)
+- A Mailgun account with an API key
 
-## Building The Provider
+## Installation
+
+Add the provider to your Terraform configuration:
+
+```hcl
+terraform {
+  required_providers {
+    mailgun = {
+      source = "registry.terraform.io/dimoschi/mailgun"
+    }
+  }
+}
+```
+
+## Provider Configuration
+
+The provider needs to be configured with your Mailgun API key. You can also optionally specify the region (US or EU) and a custom API endpoint if needed.
+
+```hcl
+provider "mailgun" {
+  api_key  = var.mailgun_api_key  # Required
+  region   = "US"                 # Optional, can be "US" or "EU"
+  endpoint = null                 # Optional, defaults to "https://api.mailgun.net"
+}
+```
+
+### Configuration Parameters
+
+| Parameter | Description | Required | Default |
+|-----------|-------------|----------|---------|
+| `api_key` | Your Mailgun API key | Yes | - |
+| `region` | The Mailgun region (US or EU) | No | US |
+| `endpoint` | The Mailgun API endpoint | No | https://api.mailgun.net |
+
+## Resources and Data Sources
+
+### Resources
+
+#### `mailgun_domain`
+
+Manages a Mailgun domain.
+
+```hcl
+resource "mailgun_domain" "example" {
+  name                = "example.com"
+  wildcard            = true
+  spam_action         = "disabled"
+  force_dkim_authority = true
+  dkim_key_size       = "2048"
+  web_scheme          = "https"
+}
+```
+
+See the [domain resource documentation](docs/resources/domain.md) for all available parameters.
+
+### Data Sources
+
+#### `mailgun_domains`
+
+Retrieves a list of all domains in your Mailgun account.
+
+```hcl
+data "mailgun_domains" "all" {}
+
+output "all_domains" {
+  value = data.mailgun_domains.all.items
+}
+```
+
+See the [domains data source documentation](docs/data-sources/domains.md) for all available parameters.
+
+## Usage Example
+
+```hcl
+terraform {
+  required_providers {
+    mailgun = {
+      source = "registry.terraform.io/dimoschi/mailgun"
+    }
+  }
+}
+
+variable "mailgun_api_key" {
+  description = "Mailgun API key"
+  type        = string
+  sensitive   = true
+}
+
+provider "mailgun" {
+  api_key = var.mailgun_api_key
+  region  = "US"
+}
+
+# Create a new domain
+resource "mailgun_domain" "example" {
+  name        = "example.com"
+  wildcard    = true
+  spam_action = "tag"
+  web_scheme  = "https"
+}
+
+# List all domains
+data "mailgun_domains" "all" {}
+
+output "all_domains" {
+  value = data.mailgun_domains.all.items
+}
+```
+
+## Development
+
+### Building the Provider
 
 1. Clone the repository
-1. Enter the repository directory
-1. Build the provider using the Go `install` command:
+2. Enter the repository directory
+3. Build the provider using the Go `install` command:
 
 ```shell
 go install
 ```
 
-## Adding Dependencies
+### Adding Dependencies
 
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
 Please see the Go documentation for the most up to date information about using Go modules.
@@ -43,22 +143,20 @@ go mod tidy
 
 Then commit the changes to `go.mod` and `go.sum`.
 
-## Using the provider
+### Testing
 
-Fill this in for each provider
-
-## Developing the Provider
-
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
-
-To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
-
-To generate or update documentation, run `make generate`.
-
-In order to run the full suite of Acceptance tests, run `make testacc`.
-
-*Note:* Acceptance tests create real resources, and often cost money to run.
+To run the provider tests:
 
 ```shell
 make testacc
 ```
+
+*Note:* Acceptance tests create real resources, and often cost money to run.
+
+### Generating the Provider
+
+This provider was generated using the OpenAPI Provider Spec Generator. For more information on how to regenerate the provider, see [README-terraform-provider-generation.md](README-terraform-provider-generation.md).
+
+## License
+
+This provider is licensed under the [Mozilla Public License v2.0](LICENSE).

@@ -1,0 +1,89 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
+# Configuration for OpenAPI Provider Spec Generator for Mailgun API
+provider:
+  name: "mailgun"
+  description: "Terraform provider for Mailgun API"
+  terraform_provider_file: "internal/provider/provider.go"
+  client_package: "internal/client"
+  client_name: "Client"
+  schema_ref: "#/components/schemas/mailgun_provider_schema"
+resources:
+  # Domain resource
+  domain:
+    description: "Manages a Mailgun domain"
+    paths:
+      - "/v4/domains/{name}"
+    create:
+      path: "/v4/domains"
+      method: "POST"
+    read:
+      path: "/v4/domains/{name}"
+      method: "GET"
+    update:
+      path: "/v4/domains/{name}"
+      method: "PUT"
+    delete:
+      path: "/v4/domains/{name}"
+      method: "DELETE"
+    schema:
+      name:
+        type: "string"
+        description: "The domain name"
+        required: true
+      spam_action:
+        type: "string"
+        description: "Spam action setting for the domain"
+        optional: true
+      wildcard:
+        type: "bool"
+        description: "Whether to enable wildcard domain"
+        optional: true
+      force_dkim_authority:
+        type: "bool"
+        description: "Whether to force DKIM authority"
+        optional: true
+      dkim_key_size:
+        type: "number"
+        description: "DKIM key size"
+        optional: true
+      ips:
+        type: "list(string)"
+        description: "List of dedicated IPs for the domain"
+        optional: true
+      pool_id:
+        type: "string"
+        description: "IP pool ID for the domain"
+        optional: true
+      web_scheme:
+        type: "string"
+        description: "Web scheme for the domain"
+        optional: true
+      state:
+        type: "string"
+        description: "The domain state"
+        computed: true
+      receiving_dns_records:
+        type: "list(object)"
+        description: "DNS records for receiving emails"
+        computed: true
+      sending_dns_records:
+        type: "list(object)"
+        description: "DNS records for sending emails"
+        computed: true
+
+data_sources:
+  # Domains data source
+  domains:
+    description: "Get a list of Mailgun domains"
+    paths:
+      - "/v4/domains"
+    read:
+      path: "/v4/domains"
+      method: "GET"
+    schema:
+      domains:
+        type: "list(object)"
+        description: "List of domains"
+        computed: true
